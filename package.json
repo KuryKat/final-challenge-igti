@@ -1,0 +1,9 @@
+{
+    "name": "final-challenge-igti",
+    "version": "1.0.0",
+    "description": "THE FINAL CHALLENGE!!",
+    "main": "src/index.js",
+    "repository": "https://github.com/KuryKat/final-challenge-igti.git",
+    "author": "KuryKat",
+    "private": true
+}
