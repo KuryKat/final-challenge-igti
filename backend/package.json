@@ -2,7 +2,7 @@
     "name": "final-challenge-backend",
     "version": "1.0.0",
     "main": "index.js",
-    "license": "MIT",
+    "type": "module",
     "dependencies": {
         "cors": "2.8.5",
         "dotenv": "8.2.0",
