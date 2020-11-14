@@ -1,4 +1,3 @@
-const mongoose = require('mongoose')
-const ObjectId = mongoose.Types.ObjectId
-
-const TransactionModel = require('../models/TransactionModel')
+import { Types } from 'mongoose'
+const ObjectId = Types.ObjectId
+import { TransactionModel } from '../models/TransactionModel'
