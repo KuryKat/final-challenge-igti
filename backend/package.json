@@ -3,12 +3,16 @@
     "version": "1.0.0",
     "main": "index.js",
     "type": "module",
+    "private": true,
     "dependencies": {
         "cors": "2.8.5",
         "dotenv": "8.2.0",
         "express": "4.17.1",
+        "moment": "2.29.1",
         "mongodb": "3.5.9",
-        "mongoose": "5.9.19"
+        "mongoose": "5.9.19",
+        "winston": "3.3.3",
+        "winston-mongodb": "5.0.5"
     },
     "devDependencies": {
         "nodemon": "2.0.4"
