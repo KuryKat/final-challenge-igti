@@ -1,17 +1,51 @@
-const mongoose = require('mongoose');
+import { Schema, model } from 'mongoose'
 
-let schema = mongoose.Schema({
-  description: String,
-  value: Number,
-  category: String,
-  year: Number,
-  month: Number,
-  day: Number,
-  yearMonth: String,
-  yearMonthDay: String,
-  type: String,
-});
-
-const TransactionModel = mongoose.model('transaction', schema);
-
-module.exports = TransactionModel;
+export const TransactionModel = model(
+    'transaction',
+    Schema(
+        {
+            description: {
+                type: String,
+                required: true,
+            },
+            value: {
+                type: Number,
+                required: true,
+            },
+            category: {
+                type: String,
+                required: true,
+            },
+            year: {
+                type: Number,
+                required: true,
+            },
+            month: {
+                type: Number,
+                required: true,
+            },
+            day: {
+                type: Number,
+                required: true,
+            },
+            yearMonth: {
+                type: String,
+                required: true,
+            },
+            yearMonthDay: {
+                type: String,
+                required: true,
+            },
+            type: {
+                type: String,
+                required: true,
+            },
+            lastModified: {
+                type: Date,
+                required: true,
+                default: new Date(),
+            },
+        },
+        'transactions'
+    )
+)
