@@ -1,17 +1,17 @@
-const express = require('express')
-const cors = require('cors')
-const mongoose = require('mongoose')
-const routes = require('./routes/routes')
-const path = require('path')
-const dotenv = require('dotenv')
+import express, { json, static } from 'express'
+import cors from 'cors'
+import { connect, connection } from 'mongoose'
+import routes from './routes/routes'
+import { join } from 'path'
+import { config } from 'dotenv'
 
-dotenv.config()
+config()
 
 const app = express()
-app.use(cors())
-app.use(express.json())
+app.use(cors({ origin: ['http://localhos:3000'] }))
+app.use(json())
 
-app.use(express.static(path.join(__dirname, 'client/build')))
+app.use(static(join(__dirname, 'client/build')))
 
 app.get('/api/', (_, response) => {
     response.send({
@@ -25,7 +25,7 @@ app.use('/api/transaction', routes)
 const { DB_CONNECTION } = process.env
 console.log('Iniciando conexão ao MongoDB...')
 
-mongoose.connect(
+connect(
     DB_CONNECTION,
     {
         useNewUrlParser: true,
@@ -38,8 +38,6 @@ mongoose.connect(
         }
     }
 )
-
-const { connection } = mongoose
 
 connection.once('open', () => {
     connectedToMongoDB = true
