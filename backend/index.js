@@ -1,50 +1,64 @@
-import express, { json, static } from 'express'
-import cors from 'cors'
-import { connect, connection } from 'mongoose'
-import routes from './routes/routes'
-import { join } from 'path'
-import { config } from 'dotenv'
+import { db } from './config/index.js'
+const {
+    express,
+    express: { json },
+    logger,
+    mongoose: { connect, connection },
+} = db
 
+import cors from 'cors'
+import { transactionsRouter as routes } from './routes/transactionsRouter.js'
+
+import { config } from 'dotenv'
 config()
 
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
 const app = express()
-app.use(cors({ origin: ['http://localhos:3000'] }))
+app.use(cors({ origin: ['http://localhost:3000'] }))
 app.use(json())
 
-app.use(static(join(__dirname, 'client/build')))
+app.use(express.static(join(__dirname, 'client/build')))
 
-app.get('/api/', (_, response) => {
+app.get('/', (_, response) => {
     response.send({
-        message:
-            'Bem-vindo à API de lançamentos. Acesse /transaction e siga as orientações',
+        message: 'a API começa em /API/ !',
     })
 })
 
-app.use('/api/transaction', routes)
+app.get('/api/', (_, response) => {
+    response.send({
+        message: 'Bem-vindo à API de lançamentos!',
+    })
+})
 
-const { DB_CONNECTION } = process.env
-console.log('Iniciando conexão ao MongoDB...')
+app.use('/api/transactions', routes)
+
+const { MONGODB } = process.env
+logger('info', 'Iniciando conexão ao MongoDB...')
 
 connect(
-    DB_CONNECTION,
+    MONGODB,
     {
         useNewUrlParser: true,
         useUnifiedTopology: true,
+        useFindAndModify: true,
     },
     err => {
         if (err) {
-            connectedToMongoDB = false
-            console.error(`Erro na conexão ao MongoDB - ${err}`)
+            logger('error', `Erro na conexão ao MongoDB - ${err.message}`)
         }
     }
 )
 
 connection.once('open', () => {
-    connectedToMongoDB = true
-    console.log('Conectado ao MongoDB')
+    logger('info', 'Conectado ao MongoDB')
 
     const APP_PORT = process.env.PORT || 3001
     app.listen(APP_PORT, () => {
-        console.log(`Servidor iniciado na porta ${APP_PORT}`)
+        logger('info', `Servidor iniciado na porta ${APP_PORT}`)
     })
 })
