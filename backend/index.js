@@ -6,6 +6,14 @@ const {
     mongoose: { connect, connection },
 } = db
 
+import { cleanUp } from './utils/cleanUp.js'
+
+cleanUp(() => {
+    logger('warn', 'WARNING: Finishing the server')
+})
+
+logger('info', 'Running on NodeJS: ' + process.version)
+
 import cors from 'cors'
 import { transactionsRouter as routes } from './routes/transactionsRouter.js'
 
@@ -45,7 +53,7 @@ connect(
     {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        useFindAndModify: true,
+        useFindAndModify: false,
     },
     err => {
         if (err) {
