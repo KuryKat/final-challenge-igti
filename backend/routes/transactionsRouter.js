@@ -9,6 +9,20 @@ import * as Service from '../services/transactionService.js'
 
 const router = Router()
 
+/**
+ * Default Info Logger for endpoints
+ * @param {import('express').Request} req
+ */
+const defaultLogger = ({ method, originalUrl }) =>
+    logger('info', `${method} - ${originalUrl}`)
+
+/**
+ * Default Error Logger for endpoints
+ * @param {import('express').Request} req
+ */
+const errorLogger = ({ method, originalUrl }) =>
+    logger('error', `${method} - ${originalUrl}`)
+
 router.post('/', async (req, res, next) => {
     try {
         const {
@@ -38,19 +52,18 @@ router.post('/', async (req, res, next) => {
             { validateBeforeSave: true },
             err => {
                 if (err) {
-                    logger('error', 'POST - API/transactions')
+                    errorLogger(req)
                     res.status(400)
                     next(err)
                 }
             },
             response => {
                 res.send(response)
-                logger('info', 'POST - API/transactions')
-                logger('info', `Result: ${JSON.stringify(response.object)}`)
+                defaultLogger(req)
             }
         )
     } catch (error) {
-        logger('error', 'POST - API/transactions')
+        errorLogger(req)
         if (error.name === 'Error') res.status(400)
         next(error)
     }
@@ -66,18 +79,18 @@ router.get('/', async (req, res, next) => {
                 null,
                 err => {
                     if (err) {
-                        logger('error', `GET - API/transactions`)
+                        errorLogger(req)
                         res.status(400)
                         next(err)
                     }
                 },
                 response => {
                     res.send(response)
-                    logger('info', 'GET - API/transactions')
+                    defaultLogger(req)
                 }
             )
         } catch (error) {
-            logger('error', 'GET - API/transactions')
+            errorLogger(req)
             if (error.name === 'Error') res.status(400)
             next(error)
         }
@@ -95,21 +108,18 @@ router.get('/', async (req, res, next) => {
                 null,
                 err => {
                     if (err) {
-                        logger(
-                            'error',
-                            `GET - API/transactions?period=${period}`
-                        )
+                        errorLogger(req)
                         res.status(400)
                         next(err)
                     }
                 },
                 response => {
                     res.send(response)
-                    logger('info', `GET - API/transactions?period=${period}`)
+                    defaultLogger(req)
                 }
             )
         } catch (error) {
-            logger('error', `GET - API/transactions?period=${period}`)
+            errorLogger(req)
             if (error.name === 'Error') res.status(400)
             next(error)
         }
@@ -125,18 +135,18 @@ router.get('/:id', async (req, res, next) => {
             id,
             err => {
                 if (err) {
-                    logger('error', `GET - API/transactions/${id}`)
+                    errorLogger(req)
                     res.status(400)
                     next(err)
                 }
             },
             response => {
                 res.send(response)
-                logger('info', `GET - API/transactions/${id}`)
+                defaultLogger(req)
             }
         )
     } catch (error) {
-        logger('error', `GET - API/transactions/${id}`)
+        errorLogger(req)
         if (error.name === 'Error') res.status(400)
         next(error)
     }
@@ -173,19 +183,18 @@ router.put('/:id', async (req, res, next) => {
             { runValidators: true },
             err => {
                 if (err) {
-                    logger('error', `PUT - API/transactions/${id}`)
+                    errorLogger(req)
                     res.status(400)
                     next(err)
                 }
             },
             response => {
                 res.send(response)
-                logger('info', `PUT - API/transactions/${id}`)
-                logger('info', `Result:  ${JSON.stringify(response.object)}`)
+                defaultLogger(req)
             }
         )
     } catch (error) {
-        logger('error', `PUT - API/transactions/${id}`)
+        errorLogger(req)
         if (error.name === 'Error') res.status(400)
         next(error)
     }
@@ -199,40 +208,40 @@ router.delete('/:id', async (req, res, next) => {
             null,
             err => {
                 if (err) {
-                    logger('error', `DELETE - API/transactions/${id}`)
+                    errorLogger(req)
                     res.status(400)
                     next(err)
                 }
             },
             response => {
                 res.send(response)
-                logger('info', `DELETE - API/transactions/${id}`)
+                defaultLogger(req)
             }
         )
     } catch (error) {
-        logger('error', `DELETE - API/transactions/${id}`)
+        errorLogger(req)
         if (error.name === 'Error') res.status(400)
         next(error)
     }
 })
 
-router.delete('/', async (_, res, next) => {
+router.delete('/', async (req, res, next) => {
     try {
         await Service.deleteAllTransactions(
             err => {
                 if (err) {
-                    logger('error', `DELETE - API/transactions/${id}`)
+                    errorLogger(req)
                     res.status(400)
                     next(err)
                 }
             },
             response => {
                 res.send(response)
-                logger('info', `DELETE - API/transactions`)
+                defaultLogger(req)
             }
         )
     } catch (error) {
-        logger('error', `DELETE - API/transactions`)
+        errorLogger(req)
         if (error.name === 'Error') res.status(400)
         next(error)
     }
