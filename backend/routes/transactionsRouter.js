@@ -1,9 +1,7 @@
 import { db } from '../config/index.js'
 const {
     moment,
-    model,
     logger,
-    mongodb: { ObjectID },
     express: { Router },
 } = db
 
@@ -25,23 +23,34 @@ router.post('/', async (req, res, next) => {
             type,
         } = req.body
 
-        const response = await Service.createTransaction({
-            description,
-            value,
-            category,
-            year,
-            month,
-            day,
-            yearMonth,
-            yearMonthDay,
-            type,
-        })
-        res.send(response)
-
-        logger('info', 'POST - API/transactions/')
-        logger('info', `Result: ${JSON.stringify(response.newObject)}`)
+        await Service.createTransaction(
+            {
+                description,
+                value,
+                category,
+                year,
+                month,
+                day,
+                yearMonth,
+                yearMonthDay,
+                type,
+            },
+            { validateBeforeSave: true },
+            err => {
+                if (err) {
+                    logger('error', 'POST - API/transactions')
+                    res.status(400)
+                    next(err)
+                }
+            },
+            response => {
+                res.send(response)
+                logger('info', 'POST - API/transactions')
+                logger('info', `Result: ${JSON.stringify(response.object)}`)
+            }
+        )
     } catch (error) {
-        logger('error', 'POST - API/transactions/')
+        logger('error', 'POST - API/transactions')
         if (error.name === 'Error') res.status(400)
         next(error)
     }
@@ -49,53 +58,85 @@ router.post('/', async (req, res, next) => {
 
 router.get('/', async (req, res, next) => {
     const { period } = req.query
-    try {
-        if (!period)
-            throw new Error(
-                'É necessário informar o parâmetro *period* - Cujo valor deve estar no formado YYYY-MM | (Query Param)'
+    if (!period) {
+        try {
+            await Service.retrieveTransaction(
+                null,
+                null,
+                null,
+                err => {
+                    if (err) {
+                        logger('error', `GET - API/transactions`)
+                        res.status(400)
+                        next(err)
+                    }
+                },
+                response => {
+                    res.send(response)
+                    logger('info', 'GET - API/transactions')
+                }
             )
-
-        const validate = moment(period, 'YYYY-MM', true).isValid()
-        if (!validate) throw new Error('Invalid Period!')
-
-        const results = await Service.retrieveTransaction({
-            yearMonth: { $regex: new RegExp(period, 'i') },
-        })
-
-        res.send(results)
-
-        logger('info', `GET - API/transactions?period=${period}/`)
-    } catch (error) {
-        logger('error', `GET - API/transactions?period=${period}/`)
-        if (error.name === 'Error') res.status(400)
-        next(error)
-    }
-})
-
-router.get('/allData', async (_, res, next) => {
-    try {
-        const results = await Service.retrieveTransaction()
-        res.send(results)
-
-        logger('info', 'GET - API/transactions/allData/')
-    } catch (error) {
-        logger('error', 'GET - API/transactions/allData/')
-        if (error.name === 'Error') res.status(400)
-        next(error)
+        } catch (error) {
+            logger('error', 'GET - API/transactions')
+            if (error.name === 'Error') res.status(400)
+            next(error)
+        }
+    } else {
+        try {
+            if (!moment(period, 'YYYY-MM', true).isValid())
+                throw new Error(
+                    'Período incorreto - O período deve estar no formato YYYY-MM'
+                )
+            await Service.retrieveTransaction(
+                {
+                    yearMonth: { $regex: new RegExp(period, 'i') },
+                },
+                null,
+                null,
+                err => {
+                    if (err) {
+                        logger(
+                            'error',
+                            `GET - API/transactions?period=${period}`
+                        )
+                        res.status(400)
+                        next(err)
+                    }
+                },
+                response => {
+                    res.send(response)
+                    logger('info', `GET - API/transactions?period=${period}`)
+                }
+            )
+        } catch (error) {
+            logger('error', `GET - API/transactions?period=${period}`)
+            if (error.name === 'Error') res.status(400)
+            next(error)
+        }
     }
 })
 
 router.get('/:id', async (req, res, next) => {
     const { id } = req.params
     try {
-        if (!ObjectID.isValid(id)) throw new Error('Invalid ID!')
-
-        const result = await Service.retrieveTransaction(null, true, id)
-        res.send(result)
-
-        logger('info', `GET - API/transactions/${id}/`)
+        await Service.retrieveTransaction(
+            null,
+            true,
+            id,
+            err => {
+                if (err) {
+                    logger('error', `GET - API/transactions/${id}`)
+                    res.status(400)
+                    next(err)
+                }
+            },
+            response => {
+                res.send(response)
+                logger('info', `GET - API/transactions/${id}`)
+            }
+        )
     } catch (error) {
-        logger('error', `GET - API/transactions/${id}/`)
+        logger('error', `GET - API/transactions/${id}`)
         if (error.name === 'Error') res.status(400)
         next(error)
     }
@@ -116,28 +157,35 @@ router.put('/:id', async (req, res, next) => {
             type,
         } = req.body
 
-        const validate = ObjectID.isValid(id)
-        if (!validate)
-            throw new Error('Invalid ID! It need to be an valid ObjectID')
-
-        const response = await Service.updateTransaction(id, {
-            description,
-            value,
-            category,
-            year,
-            month,
-            day,
-            yearMonth,
-            yearMonthDay,
-            type,
-        })
-
-        res.send(response)
-
-        logger('info', `PUT - API/transactions/${id}/`)
-        logger('info', `Result:  ${JSON.stringify(response.updatedObject)}`)
+        await Service.updateTransaction(
+            id,
+            {
+                description,
+                value,
+                category,
+                year,
+                month,
+                day,
+                yearMonth,
+                yearMonthDay,
+                type,
+            },
+            { runValidators: true },
+            err => {
+                if (err) {
+                    logger('error', `PUT - API/transactions/${id}`)
+                    res.status(400)
+                    next(err)
+                }
+            },
+            response => {
+                res.send(response)
+                logger('info', `PUT - API/transactions/${id}`)
+                logger('info', `Result:  ${JSON.stringify(response.object)}`)
+            }
+        )
     } catch (error) {
-        logger('error', `PUT - API/transactions/${id}/`)
+        logger('error', `PUT - API/transactions/${id}`)
         if (error.name === 'Error') res.status(400)
         next(error)
     }
@@ -146,11 +194,23 @@ router.put('/:id', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
     const { id } = req.params
     try {
-        await Service.deleteTransaction(id)
-        res.send({ message: `Deleted th document: ${id}` })
-        logger('info', `DELETE - API/transactions/${id}/`)
+        await Service.deleteTransaction(
+            id,
+            null,
+            err => {
+                if (err) {
+                    logger('error', `DELETE - API/transactions/${id}`)
+                    res.status(400)
+                    next(err)
+                }
+            },
+            response => {
+                res.send(response)
+                logger('info', `DELETE - API/transactions/${id}`)
+            }
+        )
     } catch (error) {
-        logger('error', `DELETE - API/transactions/${id}/`)
+        logger('error', `DELETE - API/transactions/${id}`)
         if (error.name === 'Error') res.status(400)
         next(error)
     }
@@ -158,11 +218,21 @@ router.delete('/:id', async (req, res, next) => {
 
 router.delete('/', async (_, res, next) => {
     try {
-        await Service.deleteAllTransactions()
-        res.send({ message: 'Deleted All database!' })
-        logger('info', `DELETE - API/transactions/`)
+        await Service.deleteAllTransactions(
+            err => {
+                if (err) {
+                    logger('error', `DELETE - API/transactions/${id}`)
+                    res.status(400)
+                    next(err)
+                }
+            },
+            response => {
+                res.send(response)
+                logger('info', `DELETE - API/transactions`)
+            }
+        )
     } catch (error) {
-        logger('error', `DELETE - API/transactions/`)
+        logger('error', `DELETE - API/transactions`)
         if (error.name === 'Error') res.status(400)
         next(error)
     }
