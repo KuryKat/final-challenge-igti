@@ -7,26 +7,39 @@ const {
 } = db
 
 /**
- * Default Callback tratament for mongoose operations
- * @param {Error} err
- * @param {import('mongoose').Document} product The Result Document
+ * Default Message for Invalid ID return
+ * @type {String}
  */
-const defaultCallback = (err, product) => {
+const invalidID = 'Invalid ID! It needs to be a valid ObjectID'
+
+/**
+ * Default Message for undefined Document return
+ * @type {String}
+ */
+const undefinedDocument = 'This Document does not exist!'
+
+/**
+ * Default Message for undefined ID return
+ * @type {String}
+ */
+const undefinedID = 'You need to specify the ID!'
+
+/**
+ * Default Callback tratament for error handling
+ * @param {Error} err
+ * @return {void}
+ */
+const defaultErrorCallback = err => {
     err
-        ? logger('error', `There's the error: ${err.message}`)
+        ? logger('error', `CALLBACK: There's the error: ${err.message}`)
         : logger('verbose', 'Callbacked! - DefaultCallback')
 }
 
 /**
- * Default Callback tratament for mongoose FIND operations
- * @param {Error} err
- * @param {Array<import('mongoose').Document>} product The results Documents Array
+ * @param {{message: String, object: Document}} response The response
+ * @return {void}
  */
-const defaultFindCallback = (err, products) => {
-    err
-        ? logger('error', `There's the error: ${err.message}`)
-        : logger('verbose', 'Callbacked! - DefaultFindCallback')
-}
+const transactionCallback = response => {}
 
 /**
  * Create ONE Transaction on Database
@@ -42,56 +55,66 @@ const defaultFindCallback = (err, products) => {
  * type: String
  * }} transaction The transaction to create
  *
- * @param {Boolean} validate set to false to save without validating
  * @param {import('mongoose').SaveOptions} options optional options
- * @param callback optional callback
+ * @param errorCallback Callback for Errors Handling
+ * @param response Callback that receive the response Object
+ * @return response execution
  */
 const createTransaction = async (
     transaction,
-    validate = true,
-    options = {},
-    callback = defaultCallback
+    options = null,
+    errorCallback = defaultErrorCallback,
+    response = transactionCallback
 ) => {
     const newObject = new model(transaction)
-    await newObject.save({ validateBeforeSave: validate, ...options }, callback)
-    return { message: 'Transaction Created!', newObject }
+    options ?? (options = {})
+    await newObject.save({ ...options }, errorCallback)
+    return response({
+        message: `Successfully Created Document: ${newObject._id}`,
+        newObject,
+    })
 }
 
 /**
  * Retrieve One or more Transactions on Database
- * @param {import('mongoose').FilterQuery<T>} query The query for search, if not ... search for all documents
- * @param {Boolean} byID set to true to search by ID
+ * @param {import('mongoose').FilterQuery<T>} query The search query, if not used, searches all documents
+ * @param {Boolean} byID Set to true to search by ID
  * @param {ObjectID} id if "byID" is true, give this ObjectID for make the search
- * @param callback optional callback
- * @return The results Array
+ * @param errorCallback Callback for Errors Handling
+ * @param response Callback that receive the response Object
+ * @return response execution
  */
 const retrieveTransaction = async (
     query = null,
-    byID = false,
+    byID = null,
     id = null,
-    callback = defaultFindCallback
+    errorCallback = defaultErrorCallback,
+    response = transactionCallback
 ) => {
-    /**
-     * The Results of Query
-     * @type {Array<Document>}
-     */
-    let results = []
-
-    query ?? (query = {})
-
+    byID ?? (byID = false)
     if (byID) {
-        id ?? new Error('You need to specify the ID!')
-        if (ObjectID.isValid(id)) results = await model.findById(id, callback)
-        else throw new Error('Invalid ID! - "id" must be a ObjectID instance')
-
-        return results
+        /**
+         * The search result
+         * @type {Document}
+         */
+        let result = {}
+        id ?? new SyntaxError(undefinedID)
+        if (ObjectID.isValid(id))
+            result = await model.findById(id, errorCallback)
+        else throw new Error(invalidID)
+        if (!result) throw new Error(undefinedDocument)
+        return response({ message: 'Ok', result })
     } else {
-        results = await model.find(query, callback)
+        /**
+         * The Results of Query
+         * @type {Array<Document>}
+         */
+        let results = []
+        query ?? (query = {})
+        results = await model.find(query, errorCallback)
+        if (!results) throw new Error(undefinedDocument)
+        return response({ length: results.length, results })
     }
-
-    const searchResult = { length: results.length, results }
-
-    return searchResult
 }
 
 /**
@@ -108,52 +131,94 @@ const retrieveTransaction = async (
  * yearMonthDay: String,
  * type: String
  * }} newObject
+ * @param {import('mongoose').QueryFindOneAndUpdateOptions} options optional options
+ * @param errorCallback Callback for Errors Handling
+ * @param response Callback that receive the response Object
+ * @return response execution
  */
-const updateTransaction = async (id, newObject, callback = defaultCallback) => {
-    id ?? new Error('You need to specify the ID!')
+const updateTransaction = async (
+    id,
+    newObject,
+    options = null,
+    errorCallback = defaultErrorCallback,
+    response = transactionCallback
+) => {
+    id ?? new SyntaxError(undefinedID)
     if (ObjectID.isValid(id)) {
+        const search = await model.findById(id)
+        if (!search) throw new Error(undefinedDocument)
+        options ?? (options = {})
         const updatedObject = await model.findByIdAndUpdate(
-            id,
+            search,
             newObject,
-            { new: true },
-            callback
+            { new: true, ...options },
+            errorCallback
         )
-        return { message: 'Successfully Updated!', updatedObject }
-    } else throw new Error('Invalid ID! - "id" must be a ObjectID instance')
+
+        return response({
+            message: `Successfully Updated Document: ${id}`,
+            updatedObject,
+        })
+    } else throw new Error(invalidID)
 }
 
 /**
  * Delete One Transaction on Database
  * @param {ObjectID} id
+ * @param {import('mongoose').QueryFindOneAndRemoveOptions} options
+ * @param errorCallback Callback for Errors Handling
+ * @param response Callback that receive the response Object
+ * @return response execution
  */
-const deleteTransaction = async (id, callback = defaultCallback) => {
-    id ?? new Error('You need to specify the ID!')
-    if (ObjectID.isValid(id)) await model.findByIdAndDelete(id, callback)
-    else throw new Error('Invalid ID! - "id" must be a ObjectID instance')
-
-    return { message: 'Successfully Deleted!' }
+const deleteTransaction = async (
+    id,
+    options = null,
+    errorCallback = defaultErrorCallback,
+    response = transactionCallback
+) => {
+    id ?? new SyntaxError(undefinedID)
+    if (ObjectID.isValid(id)) {
+        const search = await model.findById(id)
+        if (!search) throw new Error(undefinedDocument)
+        options ?? (options = {})
+        await model.findByIdAndDelete(id, options, errorCallback)
+        return response({
+            message: `Successfully Deleted Document: ${id}`,
+            deletedDocument: search,
+        })
+    } else throw new Error(invalidID)
 }
 
 /**
- * WARNING: THIS IS THE MOST DANGEROUS METHOD!
+ * ! WARNING: THIS IS THE MOST DANGEROUS METHOD!
  *
- * IT WILL DELETE ALL DATA FROM DATABASE!
+ * ! IT WILL DELETE ALL DATA FROM DATABASE!
  *
- * Just Use if you really know what are you doing!
+ * * Just Use if you really know what are you doing!
+ *
+ * @param errorCallback Callback for Errors Handling
+ * @param response Callback that receive the response Object
  */
-const deleteAllTransactions = async () => {
+const deleteAllTransactions = async (
+    errorCallback = defaultErrorCallback,
+    response = transactionCallback
+) => {
     logger('warn', `WARNING: All data from database will be DELETED!!`)
     logger(
         'warn',
         `WARNING: This is because you activated the "deleteAllTransactions" Method`
     )
 
-    await model.deleteMany({})
     logger('warn', 'WARNING: All data deleted!')
     logger(
         'error',
         'YOUR DATABASE NOW HAVE NO DATA, PLEASE INSERT ANY DATA (or reload the default data) TO USE THE API!'
     )
+    await model.deleteMany({}, errorCallback)
+    return response({
+        message: 'Deleted All database!',
+        ok: retrieveTransaction(),
+    })
 }
 
 export {
