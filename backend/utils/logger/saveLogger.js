@@ -13,7 +13,7 @@ const format = printf(({ level, message, label, timestamp }) => {
 
 const saveLogger = winston.createLogger({
     level: 'silly',
-    transports: [new File({ filename: 'logs.log' })],
+    transports: [new File({ filename: './logs/latest.log' })],
     format: combine(
         label({ label: 'final-challenge -> BackEnd' }),
         timestamp({ format: 'DD-MM-YYYY - HH:mm:ss' }),
