@@ -12,7 +12,6 @@
 /build
 
 # misc
-*.log
 .DS_Store
 .env
 .env.local
@@ -23,3 +22,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+
+# Compact Log Files
+*.gz
+# Log Files
+*.log
+
+# All Logs
+logs/*
