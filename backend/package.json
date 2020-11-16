@@ -11,8 +11,7 @@
         "moment": "2.29.1",
         "mongodb": "3.5.9",
         "mongoose": "5.9.19",
-        "winston": "3.3.3",
-        "winston-mongodb": "5.0.5"
+        "winston": "3.3.3"
     },
     "devDependencies": {
         "nodemon": "2.0.4"
