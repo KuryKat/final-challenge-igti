@@ -5,11 +5,13 @@ const {
     logger,
     mongoose: { connect, connection },
 } = db
+import { createBackupLog } from './utils/logger/createBackup.js'
 
 import { cleanUp } from './utils/cleanUp.js'
 
-cleanUp(() => {
+cleanUp(async () => {
     logger('warn', 'WARNING: Finishing the server')
+    await createBackupLog('./logs/latest.log', './logs/log.log.gz')
 })
 
 logger('info', 'Running on NodeJS: ' + process.version)
@@ -58,6 +60,7 @@ connect(
     err => {
         if (err) {
             logger('error', `Erro na conexão ao MongoDB - ${err.message}`)
+            process.emit('cleanup')
         }
     }
 )
