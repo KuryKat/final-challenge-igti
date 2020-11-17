@@ -33,12 +33,6 @@ app.use(json())
 
 app.use(express.static(join(__dirname, 'client/build')))
 
-app.get('/', (_, response) => {
-    response.send({
-        message: 'a API começa em /API/ !',
-    })
-})
-
 app.get('/api/', (_, response) => {
     response.send({
         message: 'Bem-vindo à API de lançamentos!',
