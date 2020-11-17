@@ -7,6 +7,20 @@ const {
 } = db
 
 /**
+ * A Transaction Object
+ * @typedef {Object} Transaction
+ * @property {String} description The Transaction Description
+ * @property {Number} value The Transaction value
+ * @property {String} category The Transaction category
+ * @property {Number} year The Transaction year
+ * @property {Number} month The Transaction month
+ * @property {Number} day The Transaction day
+ * @property {String} yearMonth The Transaction "yearMonth" string (format: yyyy-mm)
+ * @property {String} yearMonthDay The Transaction "yearMonthDay" string (format: yyyy-mm-dd)
+ * @property {String} type The Transaction type ("+" | "-")
+ */
+
+/**
  * Default Message for Invalid ID return
  * @type {String}
  */
@@ -43,18 +57,7 @@ const transactionCallback = response => {}
 
 /**
  * Create ONE Transaction on Database
- * @param {{
- * description: String,
- * value: Number,
- * category: String,
- * year: Number,
- * month: Number,
- * day: Number,
- * yearMonth: String,
- * yearMonthDay: String,
- * type: String
- * }} transaction The transaction to create
- *
+ * @param {Transaction} transaction The transaction to create
  * @param {import('mongoose').SaveOptions} options optional options
  * @param errorCallback Callback for Errors Handling
  * @param response Callback that receive the response Object
@@ -120,17 +123,7 @@ const retrieveTransaction = async (
 /**
  * Update One Transaction on Database
  * @param {ObjectID} id
- * @param {{
- * description: String,
- * value: Number,
- * category: String,
- * year: Number,
- * month: Number,
- * day: Number,
- * yearMonth: String,
- * yearMonthDay: String,
- * type: String
- * }} newObject
+ * @param {Transaction} newObject
  * @param {import('mongoose').QueryFindOneAndUpdateOptions} options optional options
  * @param errorCallback Callback for Errors Handling
  * @param response Callback that receive the response Object
