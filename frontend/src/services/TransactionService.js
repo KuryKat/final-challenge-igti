@@ -1,39 +1,61 @@
-import http from '../http-common'
+import axios from 'axios'
 
-const getAll = () => {
-    return http.get('/grade')
-}
+const http = axios.create({
+    // proxy: true,
+    baseURL: 'http://localhost:3001',
+    headers: {
+        'Content-type': 'application/json',
+    },
+})
 
-const get = id => {
-    return http.get(`/grade/${id}`)
-}
+/**
+ * A Transaction Object
+ * @typedef {Object} Transaction
+ * @property {String} description The Transaction Description
+ * @property {Number} value The Transaction value
+ * @property {String} category The Transaction category
+ * @property {Number} year The Transaction year
+ * @property {Number} month The Transaction month
+ * @property {Number} day The Transaction day
+ * @property {String} yearMonth The Transaction "yearMonth" string (format: yyyy-mm)
+ * @property {String} yearMonthDay The Transaction "yearMonthDay" string (format: yyyy-mm-dd)
+ * @property {String} type The Transaction type ("+" | "-")
+ */
 
-const create = data => {
-    return http.post('/grade', data)
-}
+/**
+ * Creates a new Transaction on Database
+ * @param {Transaction} data
+ */
+const create = data => http.post('/api/transactions', data)
 
-const update = (id, data) => {
-    return http.put(`/grade/${id}`, data)
-}
+/**
+ * Retrieve All Transactions from database
+ */
+const getAll = () => http.get('/api/transactions')
 
-const remove = id => {
-    return http.delete(`/grade/${id}`)
-}
+/**
+ * Retrieve a Transaction by ID
+ * @param {import('mongodb').ObjectID} id
+ */
+const getByID = id => http.get(`/api/transactions/${id}`)
 
-const removeAll = () => {
-    return http.delete(`/grade`)
-}
+/**
+ * Retrieve all Transactions by Period
+ * @param {Transaction['yearMonth']} period (format: yyyy-mm)
+ */
+const getByPeriod = period => http.get(`/api/transactions?period=${period}`)
 
-const findByName = name => {
-    return http.get(`/grade?name=${name}`)
-}
+/**
+ * Update a Transaction on Database
+ * @param {import('mongodb').ObjectID} id
+ * @param {Transaction} data
+ */
+const update = (id, data) => http.put(`/api/transactions/${id}`, data)
 
-export default {
-    getAll,
-    get,
-    create,
-    update,
-    remove,
-    removeAll,
-    findByName,
-}
+/**
+ * Delete a Transaction on Database by ID
+ * @param {import('mongodb').ObjectID} id
+ */
+const remove = id => http.delete(`/api/transactions/${id}`)
+
+export { create, getAll, getByID, getByPeriod, update, remove }
