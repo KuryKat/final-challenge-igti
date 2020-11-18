@@ -70,11 +70,42 @@ router.post('/', async (req, res, next) => {
 })
 
 router.get('/', async (req, res, next) => {
-    const { period } = req.query
+    const { period, desc } = req.query
     if (!period) {
         try {
             await Service.retrieveTransaction(
+                {
+                    description: { $regex: new RegExp(desc, 'i') },
+                },
                 null,
+                null,
+                err => {
+                    if (err) {
+                        errorLogger(req)
+                        res.status(400)
+                        next(err)
+                    }
+                },
+                response => {
+                    res.send(response)
+                    defaultLogger(req)
+                }
+            )
+        } catch (error) {
+            errorLogger(req)
+            if (error.name === 'Error') res.status(400)
+            next(error)
+        }
+    } else if (!desc) {
+        try {
+            if (!moment(period, 'YYYY-MM', true).isValid())
+                throw new Error(
+                    'Período incorreto - O período deve estar no formato YYYY-MM'
+                )
+            await Service.retrieveTransaction(
+                {
+                    yearMonth: { $regex: new RegExp(period, 'i') },
+                },
                 null,
                 null,
                 err => {
@@ -96,14 +127,8 @@ router.get('/', async (req, res, next) => {
         }
     } else {
         try {
-            if (!moment(period, 'YYYY-MM', true).isValid())
-                throw new Error(
-                    'Período incorreto - O período deve estar no formato YYYY-MM'
-                )
             await Service.retrieveTransaction(
-                {
-                    yearMonth: { $regex: new RegExp(period, 'i') },
-                },
+                null,
                 null,
                 null,
                 err => {
