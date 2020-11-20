@@ -1,9 +1,9 @@
-import { leftPad } from '../../utils/leftPad.js'
 import React from 'react'
-import util from 'lodash'
+import { leftPad } from '../../utils/leftPad.js'
 import { format, formatDiñero } from '../../utils/formatNumber.js'
+import Modal from './Modal/Modal.jsx'
 
-export default function Transactions({ results }) {
+export default function Transactions({ results, filtering }) {
     const globalLocale = 'pt-BR'
     const globalLocaleCurrency = 'BRL'
 
@@ -16,24 +16,24 @@ export default function Transactions({ results }) {
 
     const { length } = results
 
-    const handleClick = e => {
-        return alert('KKKKKKKKKKKKKKKKKKKKKKKK GAY')
-    }
-
     return (
         <>
             <hr />
             <div className="row">
                 <div className="col s12 m12 l12">
                     <div className="col s4 m4 l4">
-                        <button
-                            onClick={util.debounce(handleClick, 800)}
-                            className="center waves-effect waves-light btn"
+                        <a
+                            disabled={filtering}
+                            href="#modal1"
+                            className="waves-effect waves-light btn modal-trigger center"
                         >
                             <i className="material-icons right tiny">add</i>
                             Adicionar Transação
-                        </button>{' '}
+                        </a>{' '}
                     </div>
+
+                    <Modal />
+
                     <div className="col s8 m8 l8">
                         <span style={{ marginTop: '10px', padding: '10px' }}>
                             Quantidade: {format(globalLocale, length)}
@@ -76,8 +76,6 @@ export default function Transactions({ results }) {
                         year,
                         month,
                         day,
-                        yearMonth,
-                        yearMonthDay,
                         type,
                     }) => {
                         return (

@@ -37,6 +37,7 @@ export default function App() {
     const [descSearch, setDescSearch] = useState(TransactionDescription)
     const [period, setPeriod] = useState(TransactionYearMonth)
     const [year, setYear] = useState(TransactionYear)
+    const [filtering, setfiltering] = useState(TransactionYear)
 
     useEffect(() => {
         ;(async () => {
@@ -53,23 +54,20 @@ export default function App() {
     }, [period, descSearch, year])
 
     const handleHeader = (type, value, search) => {
-        type === 'change' && search === 'yearMonth'
-            ? setPeriod(value)
-            : type === 'change' && search === 'year'
-            ? setYear(value)
-            : type === 'keyup' && search === 'filter'
-            ? setDescSearch(value)
-            : type === 'click' && search === 'filter'
-            ? setDescSearch(value)
-            : console.log('Não sei como chegou aqui :P')
+        if (type === 'change' && search === 'yearMonth') setPeriod(value)
+        else if (type === 'change' && search === 'year') setYear(value)
+        else if (type === 'keyup' && search === 'filter') setDescSearch(value)
+        else if (type === 'click' && search === 'filter') setDescSearch(value)
+        else if (search === 'clean') setfiltering(false)
+        else setfiltering(true)
     }
 
     return (
         <>
             <div className="container">
-                <Header onUse={util.debounce(handleHeader, 800)} />
+                <Header onUse={util.debounce(handleHeader, 500)} />
 
-                <Transactions results={results} />
+                <Transactions filtering={filtering} results={results} />
 
                 <Footer />
             </div>

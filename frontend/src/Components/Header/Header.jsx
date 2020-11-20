@@ -11,7 +11,7 @@ export default function ({ onUse }) {
     }, [])
 
     useEffect(() => {
-        if (inputValue === '') setDisabled(true)
+        inputValue === '' ? setDisabled(true) : setDisabled(false)
     }, [inputValue])
 
     const handleSelectChange = ({ type, target: { value } }) =>
@@ -19,12 +19,12 @@ export default function ({ onUse }) {
 
     const handleInputChange = ({ target: { value } }) => setInputValue(value)
 
-    const handleSearch = ({ key, type }) =>
-        key
-            ? key === 'Enter'
-                ? onUse(type, inputValue, 'filter')
-                : setDisabled(false)
-            : onUse(type, inputValue, 'filter')
+    const handleSearch = ({ key, type }) => {
+        if (inputValue === '') onUse(null, null, 'clean')
+        else if (type === 'keyup') {
+            if (key === 'Enter') onUse(type, inputValue, 'filter')
+        } else if (type === 'click') onUse(type, inputValue, 'filter')
+    }
 
     const handleSelectYearChange = ({ type, target: { value } }) => {
         onUse(type, value, 'year')
