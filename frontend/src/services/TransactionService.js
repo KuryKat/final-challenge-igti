@@ -35,34 +35,6 @@ const create = data => http.post('/api/transactions', data)
 const getByID = id => http.get(`/api/transactions/${id}`)
 
 /**
- * Retrieve all Transactions by Period
- * @param {Transaction['yearMonth']} period (format: yyyy-mm)
- */
-const getByPeriod = period => http.get(`/api/transactions?period=${period}`)
-
-/**
- * Retrieve all Transactions by Description
- * @param {Transaction['description']} description
- */
-const getByDescription = description =>
-    http.get(`/api/transactions?desc=${description}`)
-
-/**
- * Retrieve all Transactions by Year
- * @param {Transaction['yearMonth']} period (format: yyyy-mm)
- * @param {Transaction['description']} description
- */
-const getByYear = year => http.get(`/api/transactions?year=${year}`)
-
-/**
- * Retrieve all Transactions by Period && Description
- * @param {Transaction['yearMonth']} period (format: yyyy-mm)
- * @param {Transaction['description']} description
- */
-const getByBoth = (description, period) =>
-    http.get(`/api/transactions?period=${period}&desc=${description}`)
-
-/**
  * Update a Transaction on Database
  * @param {import('mongodb').ObjectID} id
  * @param {Transaction} data
@@ -75,13 +47,34 @@ const update = (id, data) => http.put(`/api/transactions/${id}`, data)
  */
 const remove = id => http.delete(`/api/transactions/${id}`)
 
-export {
-    create,
-    getByID,
-    getByPeriod,
-    getByDescription,
-    getByYear,
-    getByBoth,
-    update,
-    remove,
+/**
+ * Get transactions from database
+ * @param {string} period
+ * @param {string} description
+ * @param {string} year
+ */
+const getBy = (period, description, year) => {
+    try {
+        if (!period && !year) {
+            http.get(`/api/transactions?desc=${description}`)
+        } else if (!description && !year) {
+            http.get(`/api/transactions?period=${period}`)
+        } else if (!description && !period) {
+            http.get(`/api/transactions?year=${year}`)
+        } else if (!year) {
+            http.get(`/api/transactions?desc=${description}&period=${period}`)
+        } else if (!period) {
+            http.get(`/api/transactions?desc=${description}&year=${year}`)
+        } else if (!description) {
+            http.get(`/api/transactions?year=${year}&period=${period}`)
+        } else {
+            http.get(
+                `/api/transactions?year=${year}&period=${period}&desc=${description}`
+            )
+        }
+    } catch (error) {
+        console.log(error)
+    }
 }
+
+export { create, getByID, update, remove, getBy }
