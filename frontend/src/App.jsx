@@ -2,12 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Footer from './Components/Footer/Footer'
 import Header from './Components/Header/Header'
 import Transactions from './Components/Transactions/Transactions'
-import {
-    getByBoth,
-    getByYear,
-    getByDescription,
-    getByPeriod,
-} from './services/TransactionService.js'
+import { getBy } from './services/TransactionService.js'
 
 import util from 'lodash'
 
@@ -46,13 +41,13 @@ export default function App() {
     useEffect(() => {
         ;(async () => {
             descSearch !== '' && period !== 'xxxx'
-                ? setResults((await getByBoth(descSearch, period)).data.results)
+                ? setResults((await getBy(period, descSearch)).data.results)
                 : descSearch !== ''
-                ? setResults((await getByDescription(descSearch)).data.results)
+                ? setResults((await getBy(null, descSearch)).data.results)
                 : period !== 'xxxx'
-                ? setResults((await getByPeriod(period)).data.results)
+                ? setResults((await getBy(period)).data.results)
                 : year !== 0
-                ? setResults((await getByYear(year)).data.results)
+                ? setResults((await getBy(null, null, year)).data.results)
                 : setResults([])
         })()
     }, [period, descSearch, year])
