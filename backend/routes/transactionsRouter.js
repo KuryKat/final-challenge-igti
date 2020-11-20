@@ -73,34 +73,9 @@ router.post('/', async (req, res, next) => {
 })
 
 router.get('/', async (req, res, next) => {
-    const { period, desc, year } = req.query
-    if (!period && !year) {
-        try {
-            await Service.retrieveTransaction(
-                {
-                    description: { $regex: new RegExp(desc, 'i') },
-                },
-                null,
-                null,
-                err => {
-                    if (err) {
-                        errorLogger(req)
-                        res.status(400)
-                        next(err)
-                    }
-                },
-                response => {
-                    res.send(response)
-                    defaultLogger(req)
-                }
-            )
-        } catch (error) {
-            errorLogger(req)
-            if (error.name === 'Error') res.status(400)
-            next(error)
-        }
-    } else if (!desc && !year) {
-        try {
+    const { period, year } = req.query
+    try {
+        if (!year) {
             if (!moment(period, 'YYYY-MM', true).isValid())
                 throw new Error(invalidPeriod)
             await Service.retrieveTransaction(
@@ -121,13 +96,7 @@ router.get('/', async (req, res, next) => {
                     defaultLogger(req)
                 }
             )
-        } catch (error) {
-            errorLogger(req)
-            if (error.name === 'Error') res.status(400)
-            next(error)
-        }
-    } else if (!desc && !period) {
-        try {
+        } else if (!period) {
             if (!moment(year, 'YYYY', true).isValid())
                 throw new Error(invalidYear)
             await Service.retrieveTransaction(
@@ -148,130 +117,15 @@ router.get('/', async (req, res, next) => {
                     defaultLogger(req)
                 }
             )
-        } catch (error) {
-            errorLogger(req)
-            if (error.name === 'Error') res.status(400)
-            next(error)
-        }
-    } else if (!year) {
-        try {
-            if (!moment(period, 'YYYY-MM', true).isValid())
-                throw new Error(invalidPeriod)
-            await Service.retrieveTransaction(
-                {
-                    yearMonth: { $regex: new RegExp(period, 'i') },
-                    description: { $regex: new RegExp(desc, 'i') },
-                },
-                null,
-                null,
-                err => {
-                    if (err) {
-                        errorLogger(req)
-                        res.status(400)
-                        next(err)
-                    }
-                },
-                response => {
-                    res.send(response)
-                    defaultLogger(req)
-                }
+        } else {
+            throw new Error(
+                'You dont specified the period or the year (or you used both)'
             )
-        } catch (error) {
-            errorLogger(req)
-            if (error.name === 'Error') res.status(400)
-            next(error)
         }
-    } else if (!period) {
-        try {
-            if (!moment(year, 'YYYY', true).isValid())
-                throw new Error(invalidYear)
-            await Service.retrieveTransaction(
-                {
-                    year: year,
-                    description: { $regex: new RegExp(desc, 'i') },
-                },
-                null,
-                null,
-                err => {
-                    if (err) {
-                        errorLogger(req)
-                        res.status(400)
-                        next(err)
-                    }
-                },
-                response => {
-                    res.send(response)
-                    defaultLogger(req)
-                }
-            )
-        } catch (error) {
-            errorLogger(req)
-            if (error.name === 'Error') res.status(400)
-            next(error)
-        }
-    } else if (!desc) {
-        try {
-            if (!moment(period, 'YYYY-MM', true).isValid())
-                throw new Error(invalidPeriod)
-
-            if (!moment(year, 'YYYY', true).isValid())
-                throw new Error(invalidYear)
-            await Service.retrieveTransaction(
-                {
-                    yearMonth: { $regex: new RegExp(period, 'i') },
-                    year: year,
-                },
-                null,
-                null,
-                err => {
-                    if (err) {
-                        errorLogger(req)
-                        res.status(400)
-                        next(err)
-                    }
-                },
-                response => {
-                    res.send(response)
-                    defaultLogger(req)
-                }
-            )
-        } catch (error) {
-            errorLogger(req)
-            if (error.name === 'Error') res.status(400)
-            next(error)
-        }
-    } else {
-        try {
-            if (!moment(period, 'YYYY-MM', true).isValid())
-                throw new Error(invalidPeriod)
-
-            if (!moment(year, 'YYYY', true).isValid())
-                throw new Error(invalidYear)
-            await Service.retrieveTransaction(
-                {
-                    yearMonth: { $regex: new RegExp(period, 'i') },
-                    year: year,
-                    description: { $regex: new RegExp(desc, 'i') },
-                },
-                null,
-                null,
-                err => {
-                    if (err) {
-                        errorLogger(req)
-                        res.status(400)
-                        next(err)
-                    }
-                },
-                response => {
-                    res.send(response)
-                    defaultLogger(req)
-                }
-            )
-        } catch (error) {
-            errorLogger(req)
-            if (error.name === 'Error') res.status(400)
-            next(error)
-        }
+    } catch (error) {
+        errorLogger(req)
+        if (error.name === 'Error') res.status(400)
+        next(error)
     }
 })
 
