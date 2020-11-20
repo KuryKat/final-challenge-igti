@@ -132,7 +132,7 @@ router.get('/', async (req, res, next) => {
                 throw new Error(invalidYear)
             await Service.retrieveTransaction(
                 {
-                    year: { $regex: new RegExp(year, 'i') },
+                    year: year,
                 },
                 null,
                 null,
@@ -187,7 +187,7 @@ router.get('/', async (req, res, next) => {
                 throw new Error(invalidYear)
             await Service.retrieveTransaction(
                 {
-                    year: { $regex: new RegExp(year, 'i') },
+                    year: year,
                     description: { $regex: new RegExp(desc, 'i') },
                 },
                 null,
@@ -219,7 +219,7 @@ router.get('/', async (req, res, next) => {
             await Service.retrieveTransaction(
                 {
                     yearMonth: { $regex: new RegExp(period, 'i') },
-                    year: { $regex: new RegExp(year, 'i') },
+                    year: year,
                 },
                 null,
                 null,
@@ -250,7 +250,7 @@ router.get('/', async (req, res, next) => {
             await Service.retrieveTransaction(
                 {
                     yearMonth: { $regex: new RegExp(period, 'i') },
-                    year: { $regex: new RegExp(year, 'i') },
+                    year: year,
                     description: { $regex: new RegExp(desc, 'i') },
                 },
                 null,
