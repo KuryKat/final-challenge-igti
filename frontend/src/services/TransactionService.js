@@ -56,19 +56,23 @@ const remove = id => http.delete(`/api/transactions/${id}`)
 const getBy = (period, description, year) => {
     try {
         if (!period && !year) {
-            http.get(`/api/transactions?desc=${description}`)
+            return http.get(`/api/transactions?desc=${description}`)
         } else if (!description && !year) {
-            http.get(`/api/transactions?period=${period}`)
+            return http.get(`/api/transactions?period=${period}`)
         } else if (!description && !period) {
-            http.get(`/api/transactions?year=${year}`)
+            return http.get(`/api/transactions?year=${year}`)
         } else if (!year) {
-            http.get(`/api/transactions?desc=${description}&period=${period}`)
+            return http.get(
+                `/api/transactions?desc=${description}&period=${period}`
+            )
         } else if (!period) {
-            http.get(`/api/transactions?desc=${description}&year=${year}`)
+            return http.get(
+                `/api/transactions?desc=${description}&year=${year}`
+            )
         } else if (!description) {
-            http.get(`/api/transactions?year=${year}&period=${period}`)
+            return http.get(`/api/transactions?year=${year}&period=${period}`)
         } else {
-            http.get(
+            return http.get(
                 `/api/transactions?year=${year}&period=${period}&desc=${description}`
             )
         }
