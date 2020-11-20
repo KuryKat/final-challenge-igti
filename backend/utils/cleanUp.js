@@ -3,10 +3,12 @@ const { logger } = db
 
 /**
  * Default callback for cleanUp function
- * @return {void}
+ * @return {Promise<void>}
  */
-const defaultCallback = () => {
-    logger('info', 'exited!')
+const defaultCallback = async () => {
+    return new Promise(resolve => {
+        resolve(logger('info', 'Exited!'))
+    })
 }
 
 /**
@@ -14,8 +16,8 @@ const defaultCallback = () => {
  * @param callback The callback to make the cleanUp
  */
 const cleanUp = (callback = defaultCallback) => {
-    process.on('cleanup', () => {
-        callback()
+    process.on('cleanup', async () => {
+        await callback()
         process.exit()
     })
 
