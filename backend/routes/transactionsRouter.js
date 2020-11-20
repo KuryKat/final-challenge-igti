@@ -209,7 +209,7 @@ router.get('/', async (req, res, next) => {
             if (error.name === 'Error') res.status(400)
             next(error)
         }
-    } else if (!description) {
+    } else if (!desc) {
         try {
             if (!moment(period, 'YYYY-MM', true).isValid())
                 throw new Error(invalidPeriod)
