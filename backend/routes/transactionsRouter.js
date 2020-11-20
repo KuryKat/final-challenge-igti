@@ -8,6 +8,9 @@ const {
 import * as Service from '../services/transactionService.js'
 
 const router = Router()
+const invalidYear = 'Ano incorreto - O ano deve estar no formato YYYY'
+const invalidPeriod =
+    'Período incorreto - O período deve estar no formato YYYY-MM'
 
 /**
  * Default Info Logger for endpoints
@@ -70,8 +73,8 @@ router.post('/', async (req, res, next) => {
 })
 
 router.get('/', async (req, res, next) => {
-    const { period, desc } = req.query
-    if (!period) {
+    const { period, desc, year } = req.query
+    if (!period && !year) {
         try {
             await Service.retrieveTransaction(
                 {
@@ -96,12 +99,10 @@ router.get('/', async (req, res, next) => {
             if (error.name === 'Error') res.status(400)
             next(error)
         }
-    } else if (!desc) {
+    } else if (!desc && !year) {
         try {
             if (!moment(period, 'YYYY-MM', true).isValid())
-                throw new Error(
-                    'Período incorreto - O período deve estar no formato YYYY-MM'
-                )
+                throw new Error(invalidPeriod)
             await Service.retrieveTransaction(
                 {
                     yearMonth: { $regex: new RegExp(period, 'i') },
@@ -125,10 +126,101 @@ router.get('/', async (req, res, next) => {
             if (error.name === 'Error') res.status(400)
             next(error)
         }
-    } else if (!period && !desc) {
+    } else if (!desc && !period) {
         try {
+            if (!moment(year, 'YYYY', true).isValid())
+                throw new Error(invalidYear)
             await Service.retrieveTransaction(
+                {
+                    year: { $regex: new RegExp(year, 'i') },
+                },
                 null,
+                null,
+                err => {
+                    if (err) {
+                        errorLogger(req)
+                        res.status(400)
+                        next(err)
+                    }
+                },
+                response => {
+                    res.send(response)
+                    defaultLogger(req)
+                }
+            )
+        } catch (error) {
+            errorLogger(req)
+            if (error.name === 'Error') res.status(400)
+            next(error)
+        }
+    } else if (!year) {
+        try {
+            if (!moment(period, 'YYYY-MM', true).isValid())
+                throw new Error(invalidPeriod)
+            await Service.retrieveTransaction(
+                {
+                    yearMonth: { $regex: new RegExp(period, 'i') },
+                    description: { $regex: new RegExp(desc, 'i') },
+                },
+                null,
+                null,
+                err => {
+                    if (err) {
+                        errorLogger(req)
+                        res.status(400)
+                        next(err)
+                    }
+                },
+                response => {
+                    res.send(response)
+                    defaultLogger(req)
+                }
+            )
+        } catch (error) {
+            errorLogger(req)
+            if (error.name === 'Error') res.status(400)
+            next(error)
+        }
+    } else if (!period) {
+        try {
+            if (!moment(year, 'YYYY', true).isValid())
+                throw new Error(invalidYear)
+            await Service.retrieveTransaction(
+                {
+                    year: { $regex: new RegExp(year, 'i') },
+                    description: { $regex: new RegExp(desc, 'i') },
+                },
+                null,
+                null,
+                err => {
+                    if (err) {
+                        errorLogger(req)
+                        res.status(400)
+                        next(err)
+                    }
+                },
+                response => {
+                    res.send(response)
+                    defaultLogger(req)
+                }
+            )
+        } catch (error) {
+            errorLogger(req)
+            if (error.name === 'Error') res.status(400)
+            next(error)
+        }
+    } else if (!description) {
+        try {
+            if (!moment(period, 'YYYY-MM', true).isValid())
+                throw new Error(invalidPeriod)
+
+            if (!moment(year, 'YYYY', true).isValid())
+                throw new Error(invalidYear)
+            await Service.retrieveTransaction(
+                {
+                    yearMonth: { $regex: new RegExp(period, 'i') },
+                    year: { $regex: new RegExp(year, 'i') },
+                },
                 null,
                 null,
                 err => {
@@ -151,12 +243,14 @@ router.get('/', async (req, res, next) => {
     } else {
         try {
             if (!moment(period, 'YYYY-MM', true).isValid())
-                throw new Error(
-                    'Período incorreto - O período deve estar no formato YYYY-MM'
-                )
+                throw new Error(invalidPeriod)
+
+            if (!moment(year, 'YYYY', true).isValid())
+                throw new Error(invalidYear)
             await Service.retrieveTransaction(
                 {
                     yearMonth: { $regex: new RegExp(period, 'i') },
+                    year: { $regex: new RegExp(year, 'i') },
                     description: { $regex: new RegExp(desc, 'i') },
                 },
                 null,
