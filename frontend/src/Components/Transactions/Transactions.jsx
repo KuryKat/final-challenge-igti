@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { leftPad } from '../../utils/leftPad.js'
 import { format, formatDiñero } from '../../utils/formatNumber.js'
 import Modal from './Modal/Modal.jsx'
@@ -6,15 +6,32 @@ import Modal from './Modal/Modal.jsx'
 export default function Transactions({ results, filtering }) {
     const globalLocale = 'pt-BR'
     const globalLocaleCurrency = 'BRL'
+    const [total, setTotal] = useState(0)
+    const [saldo, setSaldo] = useState(0)
+    const [receitas, setReceitas] = useState(0)
+    const [despesas, setDespesas] = useState(0)
 
-    const receitas = results.filter(result => result.type !== '-')
-    const despesas = results.filter(result => result.type !== '+')
-    const receitasTotal = receitas.reduce((acc, curr) => acc + curr.value, 0)
-    const despesasTotal = despesas.reduce((acc, curr) => acc + curr.value, 0)
+    useEffect(() => {
+        const fazerContinyas = () => {
+            let total = 0
+            let saldo = 0
+            let receitas = 0
+            let despesas = 0
 
-    const saldo = receitasTotal - despesasTotal
+            results.forEach(({ type, value }) => {
+                total++
+                if (type === '-') despesas += value
+                if (type === '+') receitas += value
+            })
 
-    const { length } = results
+            saldo = receitas - despesas
+            setTotal(total)
+            setSaldo(saldo)
+            setReceitas(receitas)
+            setDespesas(despesas)
+        }
+        fazerContinyas()
+    }, [results])
 
     return (
         <>
@@ -32,29 +49,49 @@ export default function Transactions({ results, filtering }) {
                         </a>{' '}
                     </div>
 
-                    <Modal />
+                    <Modal type="create" />
 
                     <div className="col s8 m8 l8">
-                        <span style={{ marginTop: '10px', padding: '10px' }}>
-                            Quantidade: {format(globalLocale, length)}
+                        <span
+                            style={{
+                                marginTop: '10px',
+                                padding: '10px',
+                            }}
+                        >
+                            Quantidade: {format(globalLocale, total)}
                         </span>
-                        <span style={{ marginTop: '10px', padding: '10px' }}>
+                        <span
+                            style={{
+                                marginTop: '10px',
+                                padding: '10px',
+                            }}
+                        >
                             Despesas:{' '}
                             {formatDiñero(
                                 globalLocale,
                                 globalLocaleCurrency,
-                                despesasTotal
+                                despesas
                             )}
                         </span>
-                        <span style={{ marginTop: '10px', padding: '10px' }}>
+                        <span
+                            style={{
+                                marginTop: '10px',
+                                padding: '10px',
+                            }}
+                        >
                             Receitas:{' '}
                             {formatDiñero(
                                 globalLocale,
                                 globalLocaleCurrency,
-                                receitasTotal
+                                receitas
                             )}
                         </span>
-                        <span style={{ marginTop: '10px', padding: '10px' }}>
+                        <span
+                            style={{
+                                marginTop: '10px',
+                                padding: '10px',
+                            }}
+                        >
                             Saldo:{' '}
                             {formatDiñero(
                                 globalLocale,

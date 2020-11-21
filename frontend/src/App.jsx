@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Footer from './Components/Footer/Footer'
 import Header from './Components/Header/Header'
 import Transactions from './Components/Transactions/Transactions'
-import { getBy } from './services/TransactionService.js'
+import { getByPeriod, getByYear } from './services/TransactionService.js'
 
 import util from 'lodash'
 
@@ -34,40 +34,50 @@ export default function App() {
     }, [])
 
     const [results, setResults] = useState(TransactionArray)
+    const [filteredResults, setFilteredResults] = useState(TransactionArray)
     const [descSearch, setDescSearch] = useState(TransactionDescription)
     const [period, setPeriod] = useState(TransactionYearMonth)
     const [year, setYear] = useState(TransactionYear)
-    const [filtering, setfiltering] = useState(TransactionYear)
+    const [filtering, setfiltering] = useState(false)
 
     useEffect(() => {
         ;(async () => {
-            descSearch !== '' && period !== 'xxxx'
-                ? setResults((await getBy(period, descSearch)).data.results)
-                : descSearch !== ''
-                ? setResults((await getBy(null, descSearch)).data.results)
-                : period !== 'xxxx'
-                ? setResults((await getBy(period)).data.results)
+            period !== 'xxxx'
+                ? setResults((await getByPeriod(period)).data.results)
                 : year !== 0
-                ? setResults((await getBy(null, null, year)).data.results)
-                : setResults([])
+                ? setResults((await getByYear(year)).data.results)
+                : console.log('Site Carregado!')
         })()
-    }, [period, descSearch, year])
+    }, [period, year])
 
-    const handleHeader = (type, value, search) => {
-        if (type === 'change' && search === 'yearMonth') setPeriod(value)
-        else if (type === 'change' && search === 'year') setYear(value)
-        else if (type === 'keyup' && search === 'filter') setDescSearch(value)
-        else if (type === 'click' && search === 'filter') setDescSearch(value)
-        else if (search === 'clean') setfiltering(false)
-        else setfiltering(true)
+    useEffect(() => {
+        const setNewResults = () => {
+            if (descSearch.length > 0) {
+                const filteredArray = results.filter(result =>
+                    new RegExp(descSearch, 'i').test(result.description)
+                )
+                setFilteredResults(filteredArray)
+            } else setFilteredResults(results)
+        }
+
+        setNewResults()
+    }, [descSearch, results])
+
+    const handleHeader = (value, type) => {
+        if (type === 'filter') setDescSearch(value)
+        else if (type === 'year') setYear(value)
+        else if (type === 'yearMonth') setPeriod(value)
     }
 
     return (
         <>
             <div className="container">
-                <Header onUse={util.debounce(handleHeader, 500)} />
+                <Header
+                    isTiping={setfiltering}
+                    onUse={util.debounce(handleHeader, 500)}
+                />
 
-                <Transactions filtering={filtering} results={results} />
+                <Transactions filtering={filtering} results={filteredResults} />
 
                 <Footer />
             </div>
